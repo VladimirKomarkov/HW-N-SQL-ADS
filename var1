@@ -1,0 +1,121 @@
+# Задание №1
+
+# Заполнение таблиц
+
+# не менее 4 исполнителей,
+# не менее 3 жанров,
+# не менее 3 альбомов,
+# не менее 6 треков,
+# не менее 4 сборников.
+
+INSERT INTO genres (genre_name) VALUES
+    ('Rock'),
+    ('Heavy Metal'),
+    ('Hardcore');
+
+INSERT INTO artists (artist_name)
+VALUES
+    ('Jimi Hendrix'),
+    ('AC/DC'),
+    ('Metallica'),
+    ('Agnostic Front');
+
+INSERT INTO albums (album_name, release_year)
+VALUES 
+  ('Are You Experienced', '2019-01-01'),
+  ('Back in Black', '2020-01-01'),
+  ('Master of Puppets', '2019-01-01'),
+  ('Warriors', '2007-01-01');
+
+INSERT INTO tracks (track_name, duration, album_id)
+VALUES 
+    ('Purple Haze', 170, 1),
+    ('Hells Bells', 310, 2),
+    ('Nothing Else Matters', 399, 3),
+    ('Enter Sandman', 329, 3),
+    ('Addiction', 140, 4),
+    ('For my family', 142, 4);
+
+INSERT INTO compilation (compilation_name, release_year)
+VALUES
+    ('Experience Hendrix: The Best of Jimi Hendrix', '2019-03-04'),
+    ('High Voltage', '1976-02-07'),
+    ('Metallica: The Black Album', '1991-05-04'),
+    ('Raw Unleashed', '2001-05-02');
+
+
+ # Задание №2
+
+# Написать SELECT-запросы, которые выведут информацию согласно инструкциям ниже.
+
+# Название и продолжительность самого длительного трека.
+# Название треков, продолжительность которых не менее 3,5 минут.
+# Названия сборников, вышедших в период с 2018 по 2020 год включительно.
+# Исполнители, чьё имя состоит из одного слова.
+# Название треков, которые содержат слово «мой» или «my».
+
+
+SELECT track_name as name, MAX(duration) as max_duration
+FROM tracks
+GROUP BY track_name;
+
+select track_name as name, duration
+from tracks
+where duration >= 210
+
+SELECT compilation_name as name
+FROM compilation
+WHERE release_year BETWEEN '2018-01-01' AND '2020-12-31';
+
+
+SELECT artist_name as name
+FROM artists
+WHERE artist_name ~ '^[A-Za-z]+$';
+
+select track_name as name
+from tracks
+where track_name like '%my%'
+
+
+# Задание №3
+
+# Написать SELECT-запросы, которые выведут информацию согласно инструкциям ниже.
+
+# Количество исполнителей в каждом жанре.
+# Количество треков, вошедших в альбомы 2019–2020 годов.
+# Средняя продолжительность треков по каждому альбому.
+# Все исполнители, которые не выпустили альбомы в 2020 году.
+# Названия сборников, в которых присутствует конкретный исполнитель (выберите его сами).
+
+
+SELECT g.genre_name AS genre, COUNT(a.artist_id) AS NumberOfArtists
+FROM genres_artists ga
+LEFT JOIN artists a ON ga.artist_id = a.artist_id
+LEFT JOIN genres g ON ga.genre_id = g.genre_id
+GROUP BY g.genre_name
+ORDER BY NumberOfArtists DESC;
+
+SELECT COUNT(t.track_id) AS tracks_quantity
+FROM tracks t
+LEFT JOIN albums a ON t.album_id = a.album_id
+WHERE a.release_year >= '2019-01-01' AND a.release_year <= '2020-12-31';
+
+SELECT a.album_name, ROUND(AVG(EXTRACT(EPOCH FROM INTERVAL '1 second' * t.duration))) AS average_duration
+FROM albums a
+LEFT JOIN tracks t ON a.album_id = t.album_id
+GROUP BY a.album_name
+ORDER BY a.album_name;
+
+SELECT artist_name
+FROM artists
+WHERE artist_id NOT IN (
+    SELECT artist_id
+    FROM albums
+    WHERE release_year BETWEEN '2020-01-01' AND '2020-12-31'
+);
+
+SELECT c.compilation_name
+FROM compilation c
+INNER JOIN compilation_artists ca ON c.compilation_id = ca.compilation_id
+inner join artists a on ca.artist_id = a.artist_id 
+WHERE a.artist_name = 'Agnostic Front';
